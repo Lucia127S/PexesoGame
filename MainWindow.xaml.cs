@@ -79,14 +79,13 @@ namespace PexesoGame
                 if (textBlock.Name != "timeTextBlock")
                 {
                     int position = int.Parse( textBlock.Name.Substring(textBlock.Name.Length - 2, 2));
-                    Console.WriteLine(position.ToString());
                     
                     int index = random.Next(animalEmoji.Count); // index - number between 0 and the number of emoji left in the list
                     string nextEmoji = animalEmoji[index];      // using random number to get a random emoji from list
                     //textBlock.Text = nextEmoji;               // not updating the text with random emoji - is "?" for all
                     animalEmoji.RemoveAt(index);                // remove used emoji 
-                    textBlock.Visibility= Visibility.Visible;
-
+                    textBlock.IsEnabled = true;
+                    textBlock.Text = "?";
                     actualEmoji.Add(nextEmoji);                 //updating the list with random emoji
                 }
             }
@@ -107,11 +106,13 @@ namespace PexesoGame
             {
                 lastTextBlockClicked = textBlock;
                 lastTextBlockClicked.Text = actualEmoji.ElementAt(position);
+                lastTextBlockClicked.IsEnabled = false;
             }
             if (FieldsClick == 2)
             {
                 actualTextBlockClicked = textBlock;
                 actualTextBlockClicked.Text = actualEmoji.ElementAt(position);
+                actualTextBlockClicked.IsEnabled = false;
             }
             
             if(lastTextBlockClicked != null && actualTextBlockClicked != null && 
@@ -128,6 +129,7 @@ namespace PexesoGame
         {
             if(MatchesFound == 8) //2x4 animals
             {
+                actualEmoji.Clear();
                 SetUpGame();
             }
         }
