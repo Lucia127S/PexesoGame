@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,12 +23,15 @@ namespace PexesoGame
     /// </summary>
     public partial class MainWindow : Window
     {
+        TextBlock actualTextBlockClicked;
         TextBlock lastTextBlockClicked;
-        bool findinfMatch = false;
 
         DispatcherTimer timer = new DispatcherTimer();
         int tenthsOfSecondElpased; // to keep track of the time elapsed
         int MatchesFound; // number of matches the player has found in game
+        int FieldsClick = 0;
+        List<string> actualEmoji = new List<string>(16);
+
 
         public MainWindow()
         {
@@ -74,11 +78,16 @@ namespace PexesoGame
             {
                 if (textBlock.Name != "timeTextBlock")
                 {
-                    int index = random.Next(animalEmoji.Count); //index - number between 0 and the number of emoji left in the list
+                    int position = int.Parse( textBlock.Name.Substring(textBlock.Name.Length - 2, 2));
+                    Console.WriteLine(position.ToString());
+                    
+                    int index = random.Next(animalEmoji.Count); // index - number between 0 and the number of emoji left in the list
                     string nextEmoji = animalEmoji[index];      // using random number to get a random emoji from list
-                    textBlock.Text = nextEmoji;                 //updating the text with random emoji
-                    animalEmoji.RemoveAt(index);                //remove used emoji 
+                    //textBlock.Text = nextEmoji;               // not updating the text with random emoji - is "?" for all
+                    animalEmoji.RemoveAt(index);                // remove used emoji 
                     textBlock.Visibility= Visibility.Visible;
+
+                    actualEmoji.Add(nextEmoji);                 //updating the list with random emoji
                 }
             }
 
@@ -91,22 +100,27 @@ namespace PexesoGame
         {
             //steps for not/finding pair
             TextBlock textBlock = sender as TextBlock;
-            if(findinfMatch == false)
+            FieldsClick++;
+            int position = int.Parse(textBlock.Name.Substring(textBlock.Name.Length - 2, 2));
+
+            if (FieldsClick == 1)
             {
-                textBlock.Visibility = Visibility.Hidden;
-                lastTextBlockClicked= textBlock; // keeps track of TextBlock in case it needs to make it visible again
-                findinfMatch= true;
+                lastTextBlockClicked = textBlock;
+                lastTextBlockClicked.Text = actualEmoji.ElementAt(position);
             }
-            else if(textBlock.Text == lastTextBlockClicked.Text) 
+            if (FieldsClick == 2)
             {
+                actualTextBlockClicked = textBlock;
+                actualTextBlockClicked.Text = actualEmoji.ElementAt(position);
+            }
+            
+            if(lastTextBlockClicked != null && actualTextBlockClicked != null && 
+                lastTextBlockClicked.Text == actualTextBlockClicked.Text)
+            {
+                lastTextBlockClicked.IsEnabled = false;
+                actualTextBlockClicked.IsEnabled = false;
+                FieldsClick = 0;
                 MatchesFound++;
-                textBlock.Visibility = Visibility.Hidden;
-                findinfMatch = false;
-            }
-            else // not found - reset visibility
-            {
-                lastTextBlockClicked.Visibility = Visibility.Visible;   
-                findinfMatch = false;
             }
         }
 
@@ -115,6 +129,19 @@ namespace PexesoGame
             if(MatchesFound == 8) //2x4 animals
             {
                 SetUpGame();
+            }
+        }
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //refresh clicked fields
+            if (FieldsClick > 2)
+            {
+                actualTextBlockClicked.Text = "?";
+                actualTextBlockClicked.IsEnabled = true;
+                lastTextBlockClicked.Text = "?";
+                lastTextBlockClicked.IsEnabled = true;
+                FieldsClick = 0;
             }
         }
     }
